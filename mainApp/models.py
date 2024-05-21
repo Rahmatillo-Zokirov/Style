@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from userApp.models import User
 
 
 class Bolim(models.Model):
@@ -31,9 +32,8 @@ class Mahsulot(models.Model):
     kafolat = models.CharField(max_length=50, blank=True, null=True)
     yetkazish = models.CharField(max_length=50, blank=True, null=True)
     mavjud = models.BooleanField(default=True)
-    baho = models.PositiveSmallIntegerField(
-        blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(5)]
-    )
+    baho = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)], default=5)
+    davlat = models.CharField(max_length=50, blank=True, null=True)
     korish = models.PositiveSmallIntegerField(default=0)
     buyurtma_soni = models.PositiveIntegerField(default=0)
 
@@ -56,3 +56,17 @@ class Xususiyat(models.Model):
 
     def __str__(self):
         return self.nom
+
+
+class Baholash(models.Model):
+    baho = models.PositiveSmallIntegerField(validators=[MaxValueValidator(5)])
+    izoh = models.TextField(blank=True, null=True)
+    mahsulot = models.ForeignKey(Mahsulot, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    sana = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.izoh[:30]
+
+    class Meta:
+        unique_together = (("mahsulot", "user"),)

@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Avg
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from .models import *
 
@@ -10,7 +11,6 @@ class HomeView(View):
             'bolimlar': bolimlar
         }
         return render(request, 'page-index.html', context)
-
 
 
 class BolimlarView(View):
@@ -27,6 +27,7 @@ class BolimView(View):
         }
         return render(request, 'page-category.html', context)
 
+
 #
 # class IchkiBolimMahsulotlarView(View):
 #     def get(self, request, pk):
@@ -39,6 +40,43 @@ class BolimView(View):
 #         return render(request, 'page-listing-grid.html', context)
 
 
-class MahsulotView(View):
+class MahsulotlarView(View):
     def get(self, request):
-        return render(request, 'page-detail-product.html')
+        listing = request.GET.get('listing', None)
+        mahsulotlar = Mahsulot.objects.all()
+        context = {
+            "mahsulotlar": mahsulotlar
+        }
+        if listing is not None and listing == "large":
+            return render(request, 'page-listing-large.html', context)
+        else:
+            return render(request, 'page-listing-grid.html', context)
+
+
+class MahsulotView(View):
+    def get(self, request, pk):
+        mahsulot = get_object_or_404(Mahsulot, id=pk)
+        chegirma_narx = f"{mahsulot.narx * (100 - mahsulot.chegirma) / 100:.2f}"
+        baholashlar = Baholash.objects.filter(mahsulot=mahsulot)
+        baho_foiz = float(mahsulot.baho) / 5 * 100
+        context = {
+            "mahsulot": mahsulot,
+            "chegirma_narx": chegirma_narx,
+            "baholashlar": baholashlar,
+            "review": len(baholashlar),
+            "baho_foiz": baho_foiz
+        }
+        return render(request, 'page-detail-product.html', context)
+
+    def post(self, request, pk):
+        mahsulot = get_object_or_404(Mahsulot, id=pk)
+        Baholash.objects.create(
+            mahsulot=mahsulot,
+            user=request.user,
+            baho=request.POST.get('baho'),
+            izoh=request.POST.get('izoh', None),
+        )
+        baho = Baholash.objects.filter(mahsulot=mahsulot).aggregate(Avg('baho')).get('baho__avg')
+        mahsulot.baho = baho
+        mahsulot.save()
+        return redirect(f'/mahsulotlar/{mahsulot.id}/')

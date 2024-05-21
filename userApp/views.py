@@ -10,3 +10,8 @@ class LoginView(View):
 class RegisterView(View):
     def get(self, request):
         return render(request, 'page-user-register.html')
+
+
+class UserDetailsView(View):
+    def get(self, request):
+        return render(request, 'page-profile-main.html')
