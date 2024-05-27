@@ -5,7 +5,7 @@
 <section class="py-3 bg-light">
     <div class="container">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
             <li class="breadcrumb-item"><a href="#">Category name</a></li>
             <li class="breadcrumb-item"><a href="#">Sub category</a></li>
             <li class="breadcrumb-item active" aria-current="page">Items</li>
@@ -91,27 +91,20 @@
                         {% endif %}
                     </dl>
 
-                    <div class="form-row  mt-4">
+                    <form class="form-row  mt-4" method="post">
+                        {% csrf_token %}
+                        <input type="text" name="type" value="savat" hidden>
                         <div class="form-group col-md flex-grow-0">
                             <div class="input-group mb-3 input-spinner">
-                                <div class="input-group-prepend">
-                                    <button class="btn btn-light" type="button" id="button-plus"> +</button>
-                                </div>
-                                <input type="text" class="form-control" value="1">
-                                <div class="input-group-append">
-                                    <button class="btn btn-light" type="button" id="button-minus"> &minus;</button>
-                                </div>
+                                <input type="number" class="form-control-plaintext" name="miqdor" value="1">
                             </div>
                         </div> <!-- col.// -->
                         <div class="form-group col-md">
-                            <a href="#" class="btn  btn-primary">
-                                <i class="fas fa-shopping-cart"></i> <span class="text">Add to cart</span>
-                            </a>
-                            <a href="#" class="btn btn-light">
-                                <i class="fas fa-envelope"></i> <span class="text">Contact supplier</span>
-                            </a>
+                            <button type="submit">
+                                <i class="fas fa-shopping-cart"></i><span class="text"> Add to card </span>
+                            </button>
                         </div> <!-- col.// -->
-                    </div> <!-- row.// -->
+                    </form> <!-- row.// -->
 
                 </article> <!-- product-info-aside .// -->
             </main> <!-- col.// -->
@@ -127,6 +120,7 @@
 <div class="container d-flex justify-content-center align-items-center">
     <form method="post"> {%csrf_token%}
         <div class="form-group">
+            <input type="text" name="type" value="izoh" hidden>
             <label for="smileyRating">Your rating</label>
             <div class="rating-container d-flex" id="smileyRating" style="gap: 20px;">
                 <input type="radio" name="baho" value="1" id="smiley1" style="display:none;">

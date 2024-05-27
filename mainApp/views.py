@@ -1,6 +1,8 @@
 from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
+
+from orderApp.models import Savat, SavatMahsulot
 from .models import *
 
 
@@ -29,15 +31,15 @@ class BolimView(View):
 
 
 #
-# class IchkiBolimMahsulotlarView(View):
-#     def get(self, request, pk):
-#         ichkiBolim = get_object_or_404(IchkiBolim, id=pk)
-#         mahsulotlar = Mahsulot.objects.filter(ichki_bolim=ichkiBolim)
-#         context = {
-#             'mahsulotlar': mahsulotlar,
-#             'ichkiBolim': ichkiBolim
-#         }
-#         return render(request, 'page-listing-grid.html', context)
+class IchkiBolimMahsulotlarView(View):
+    def get(self, request, pk):
+        ichkiBolim = get_object_or_404(IchkiBolim, id=pk)
+        mahsulotlar = Mahsulot.objects.filter(ichki_bolim=ichkiBolim)
+        context = {
+            'mahsulotlar': mahsulotlar,
+            'ichkiBolim': ichkiBolim
+        }
+        return render(request, 'page-listing-grid.html', context)
 
 
 class MahsulotlarView(View):
@@ -69,14 +71,29 @@ class MahsulotView(View):
         return render(request, 'page-detail-product.html', context)
 
     def post(self, request, pk):
-        mahsulot = get_object_or_404(Mahsulot, id=pk)
-        Baholash.objects.create(
-            mahsulot=mahsulot,
-            user=request.user,
-            baho=request.POST.get('baho'),
-            izoh=request.POST.get('izoh', None),
-        )
-        baho = Baholash.objects.filter(mahsulot=mahsulot).aggregate(Avg('baho')).get('baho__avg')
-        mahsulot.baho = baho
-        mahsulot.save()
-        return redirect(f'/mahsulotlar/{mahsulot.id}/')
+        if request.Post.get('type') == "savat":
+            mahsulot = get_object_or_404(Mahsulot, id=pk)
+            Baholash.objects.create(
+                mahsulot=mahsulot,
+                user=request.user,
+                baho=request.POST.get('baho'),
+                izoh=request.POST.get('izoh', None),
+            )
+            baho = Baholash.objects.filter(mahsulot=mahsulot).aggregate(Avg('baho')).get('baho__avg')
+            mahsulot.baho = baho
+            mahsulot.save()
+            return redirect(f'/mahsulotlar/{mahsulot.id}/')
+        elif request.Post.get('type') == "savat":
+            mahsulot = get_object_or_404(Mahsulot, id=pk)
+            miqdor = request.POST.get('miqdor', None)
+            savatlar = Savat.objects.filter(user=request.user)
+            if len(savatlar) == 0:
+                savat = Savat.objects.create(user=request.user)
+            else:
+                savat = savatlar.first()
+            savatMahsulot = SavatMahsulot.objects.create(
+                savat=savat,
+                mahsulot=mahsulot,
+                miqdor=miqdor
+            )
+            return redirect(f'/mahsulotlar/{mahsulot.id}/')
